@@ -43,6 +43,8 @@ public class FXMLController {
 		Graph<Airport, DefaultWeightedEdge> graph = model.creaGrafo(Integer.parseInt(distanzaMinima.getText()));
 		txtResult.appendText(String.format("Creato grafico con %d vertici e %d archi", graph.vertexSet().size(),
 				graph.edgeSet().size()));
+		for (DefaultWeightedEdge e : graph.edgeSet())
+			txtResult.appendText("\n" + e.toString() + " - " + graph.getEdgeWeight(e));
 	}
 
 	@FXML // This method is called by the FXMLLoader when initialization is complete
