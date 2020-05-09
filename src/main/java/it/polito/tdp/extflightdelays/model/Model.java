@@ -14,11 +14,11 @@ import it.polito.tdp.extflightdelays.db.ExtFlightDelaysDAO;
 
 public class Model {
 
-	Graph<Airport, DefaultEdge> graph;
+	Graph<Airport, DefaultWeightedEdge> graph;
 	Map<Integer, Airport> airports;
 
-	public void creaGrafo(int distanzaMin) {
-		graph = new SimpleWeightedGraph<Airport, DefaultEdge>(DefaultEdge.class);
+	public Graph<Airport, DefaultWeightedEdge> creaGrafo(int distanzaMin) {
+		graph = new SimpleWeightedGraph<Airport, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 		airports = new HashMap<Integer, Airport>();
 
 		ExtFlightDelaysDAO dao = new ExtFlightDelaysDAO();
@@ -27,8 +27,8 @@ public class Model {
 		for (Airport a : dao.loadAllAirports())
 			airports.put(a.getId(), a);
 
-		for (CoppieAereoporti ca : dao.trovaVoli(airports)) {
-			DefaultEdge edge = graph.getEdge(ca.getAir1(), ca.getAir2());
+		for (CoppieAereoporti ca : dao.trovaVoli(airports, distanzaMin)) {
+			DefaultWeightedEdge edge = graph.getEdge(ca.getAir1(), ca.getAir2());
 
 			if (edge == null)
 				Graphs.addEdge(graph, ca.getAir1(), ca.getAir2(), ca.getDist());
@@ -41,8 +41,7 @@ public class Model {
 
 		}
 
-		System.out.println(String.format("Creato grafico con %d vertici e %d archi", graph.vertexSet().size(),
-				graph.edgeSet().size()));
+		return graph;
 
 	}
 

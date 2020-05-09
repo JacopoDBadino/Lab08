@@ -96,14 +96,15 @@ public class ExtFlightDelaysDAO {
 		}
 	}
 
-	public List<CoppieAereoporti> trovaVoli(Map<Integer, Airport> airports) {
+	public List<CoppieAereoporti> trovaVoli(Map<Integer, Airport> airports, int distMin) {
 		String sql = "SELECT ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, COUNT(*) as C, "
-				+ "AVG(DISTANCE) AS D FROM flights " + "GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID";
+				+ "AVG(DISTANCE) AS D FROM flights " + "GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING D>?";
 		List<CoppieAereoporti> result = new LinkedList<CoppieAereoporti>();
 
 		try {
 			Connection conn = ConnectDB.getConnection();
 			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, distMin);
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
@@ -126,40 +127,6 @@ public class ExtFlightDelaysDAO {
 			System.out.println("Errore connessione al database");
 			throw new RuntimeException("Error Connection Database");
 		}
-	}
-
-	public CoppieAereoporti trovaVoli(int id1, int id2) {
-
-		String sql = "SELECT ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, COUNT(*) as C, AVG(DISTANCE) AS D "
-				+ "FROM flights WHERE ORIGIN_AIRPORT_ID = ? AND DESTINATION_AIRPORT_ID = ? "
-				+ "GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID";
-
-		CoppieAereoporti c;
-
-		try {
-			Connection conn = ConnectDB.getConnection();
-			PreparedStatement st = conn.prepareStatement(sql);
-			st.setInt(1, id2);
-			st.setInt(2, id1);
-			ResultSet rs = st.executeQuery();
-
-			rs.first();
-
-			int cnt = rs.getInt("C");
-			int distance = rs.getInt("D");
-			c = new CoppieAereoporti(null, null, cnt, distance);
-
-			conn.close();
-			return c;
-
-		} catch (
-
-		SQLException e) {
-			e.printStackTrace();
-			System.out.println("Errore connessione al database");
-			return null;
-		}
-
 	}
 
 }
