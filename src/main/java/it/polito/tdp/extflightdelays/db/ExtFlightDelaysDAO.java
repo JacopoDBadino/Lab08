@@ -5,11 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.CoppieAereoporti;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
@@ -91,4 +95,71 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+
+	public List<CoppieAereoporti> trovaVoli(Map<Integer, Airport> airports) {
+		String sql = "SELECT ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, COUNT(*) as C, "
+				+ "AVG(DISTANCE) AS D FROM flights " + "GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID";
+		List<CoppieAereoporti> result = new LinkedList<CoppieAereoporti>();
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				Airport a1 = airports.get((rs.getInt("ORIGIN_AIRPORT_ID")));
+				Airport a2 = airports.get((rs.getInt("DESTINATION_AIRPORT_ID")));
+				int cnt = rs.getInt("C");
+				int dist = rs.getInt("D");
+
+				result.add(new CoppieAereoporti(a1, a2, cnt, dist));
+			}
+
+			conn.close();
+			return result;
+
+		} catch (
+
+		SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+
+	public CoppieAereoporti trovaVoli(int id1, int id2) {
+
+		String sql = "SELECT ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID, COUNT(*) as C, AVG(DISTANCE) AS D "
+				+ "FROM flights WHERE ORIGIN_AIRPORT_ID = ? AND DESTINATION_AIRPORT_ID = ? "
+				+ "GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID";
+
+		CoppieAereoporti c;
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, id2);
+			st.setInt(2, id1);
+			ResultSet rs = st.executeQuery();
+
+			rs.first();
+
+			int cnt = rs.getInt("C");
+			int distance = rs.getInt("D");
+			c = new CoppieAereoporti(null, null, cnt, distance);
+
+			conn.close();
+			return c;
+
+		} catch (
+
+		SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			return null;
+		}
+
+	}
+
 }
